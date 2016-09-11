@@ -213,7 +213,7 @@ class DockerCompose:
         self.call(cmd)
 
 
-def main(argv):
+def main():
     parser = argparse.ArgumentParser(formatter_class=lambda prog: argparse.HelpFormatter(prog, max_help_position=50, width=120))
     parser.add_argument('-f', '--file', type=argparse.FileType(), help='Specify an alternate compose file (default: docker-compose.yml)', default='docker-compose.yml')
     parser.add_argument('-p', '--project-name', help='Specify an alternate project name (default: directory name)')
@@ -241,7 +241,7 @@ def main(argv):
     up_parser.set_defaults(command='up')
     up_parser.add_argument('-d', help='docker-compose compatibility; ignored', action='store_true')
 
-    args = parser.parse_args(argv[1:])
+    args = parser.parse_args(sys.argv[1:])
 
     global debug
     debug = args.dry_run
@@ -256,4 +256,4 @@ def main(argv):
 
 
 if __name__ == "__main__":
-    main(sys.argv)
+    main()

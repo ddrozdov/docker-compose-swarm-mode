@@ -15,13 +15,15 @@ Neither option looked good to me so, as a temporary solution (I still hope Docke
 
 ## Installation
 
-Just download the `.py` script.
+docker-compose-swarm-mode is available on [PyPI](https://pypi.python.org/pypi/docker-compose-swarm-mode).
+
+`pip install docker-compose-swarm-mode`
+
+Or just download the `.py` script.
 
 ## Requirements
 
-Python 2.7.
-
-[yodl](https://pypi.python.org/pypi/yodl) 1.0.0 (`pip install yodl`)
+Python 2.7+.
 
 ## Usage
 
@@ -41,6 +43,12 @@ Keys that are silently ignored because they are not supported by `docker service
 * hostname
 
 ## History
+
+#### 1.1.0
+
+Python 3 support.
+
+Installation from PyPI.
 
 #### 1.0.0
 
