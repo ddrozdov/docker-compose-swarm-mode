@@ -45,7 +45,7 @@ class DockerCompose:
                 else:
                     extended_service_data = result[extended_service]
 
-                for k, v in extended_service_data.iteritems():
+                for k, v in extended_service_data.items():
                     if k not in result[service]:
                         result[service][k] = v
 
@@ -103,7 +103,7 @@ class DockerCompose:
                 def logging():
                     cmd.extend(['--log-driver', value['driver'], '\\\n'])
                     log_opts = value['options']
-                    for k, v in log_opts.iteritems():
+                    for k, v in log_opts.items():
                         cmd.extend(['--log-opt', '{}={}'.format(k, v), '\\\n'])
 
                 def mem_limit():
@@ -149,7 +149,7 @@ class DockerCompose:
 
                 def environment():
                     if isinstance(value, dict):
-                        for k, v in value.iteritems():
+                        for k, v in value.items():
                             cmd.extend(['--env', '{}={}'.format(k, v), '\\\n'])
                     else:
                         for env in value:
@@ -215,7 +215,7 @@ class DockerCompose:
 
 def main(argv):
     parser = argparse.ArgumentParser(formatter_class=lambda prog: argparse.HelpFormatter(prog, max_help_position=50, width=120))
-    parser.add_argument('-f', '--file', type=file, help='Specify an alternate compose file (default: docker-compose.yml)', default='docker-compose.yml')
+    parser.add_argument('-f', '--file', type=argparse.FileType(), help='Specify an alternate compose file (default: docker-compose.yml)', default='docker-compose.yml')
     parser.add_argument('-p', '--project-name', help='Specify an alternate project name (default: directory name)')
     parser.add_argument('--dry-run', action='store_true')
     subparsers = parser.add_subparsers(title='Command')
