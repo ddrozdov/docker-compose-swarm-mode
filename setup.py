@@ -1,15 +1,22 @@
-import pypandoc
 from setuptools import setup
+
+try:
+    import pypandoc
+    long_description = pypandoc.convert('README.md', 'rst')
+except (IOError, ImportError):
+    long_description = ''
+
+version = '1.1.1'
 
 setup(
     name='docker-compose-swarm-mode',
     py_modules=['docker_compose_swarm_mode'],
-    version='1.1.0',
+    version=version,
     author='Dmitry Drozdov',
     url='https://github.com/ddrozdov/docker-compose-swarm-mode',
-    download_url='https://github.com/ddrozdov/docker-compose-swarm-mode/tarball/1.1.0',
+    download_url='https://github.com/ddrozdov/docker-compose-swarm-mode/tarball/' + version,
     description='Drop in replacement for docker-compose that works with swarm mode introduced in Docker 1.12.',
-    long_description=pypandoc.convert('README.md', 'rst'),
+    long_description=long_description,
     license='MIT',
     install_requires=['yodl>=1.0.0'],
     entry_points={

@@ -44,6 +44,10 @@ Keys that are silently ignored because they are not supported by `docker service
 
 ## History
 
+#### 1.1.1
+
+Fix pypandoc being required on installation while needed on packaging phase only.
+
 #### 1.1.0
 
 Python 3 support.
