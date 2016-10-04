@@ -221,9 +221,22 @@ class DockerCompose:
 
 
 def main():
+    envs = {
+        'COMPOSE_FILE': 'docker-compose.yml',
+        'COMPOSE_HTTP_TIMEOUT': '60',
+        'COMPOSE_TLS_VERSION': 'TLSv1'
+    }
+    env_path = os.path.join(os.getcwd(), '.env')
+
+    if os.path.isfile(env_path):
+        with open(env_path) as env_file:
+            envs.update(dict(map(line.strip().split('=', 1) for line in env_file if not line.startswith('#') and line.strip())))
+    
+    map(lambda e: os.environ.update({e[0]:e[1]}), (e for e in envs.items() if not e[0] in os.environ))
+
     parser = argparse.ArgumentParser(formatter_class=lambda prog: argparse.HelpFormatter(prog, max_help_position=50, width=120))
     parser.add_argument('-f', '--file', type=argparse.FileType(), help='Specify an alternate compose file (default: docker-compose.yml)', default=[], action='append')
-    parser.add_argument('-p', '--project-name', help='Specify an alternate project name (default: directory name)')
+    parser.add_argument('-p', '--project-name', help='Specify an alternate project name (default: directory name)', default=os.environ.get('COMPOSE_PROJECT_NAME'))
     parser.add_argument('--dry-run', action='store_true')
     subparsers = parser.add_subparsers(title='Command')
     parser.add_argument('_service', metavar='service', nargs='*', help='List of services to run the command for')
@@ -251,10 +264,10 @@ def main():
     args = parser.parse_args(sys.argv[1:])
 
     if len(args.file) == 0:
-        if os.path.isfile('docker-compose.yml'):
-            args.file = [open('docker-compose.yml')]
-        else:
-            print('No compose file found or specified.')
+        try:
+            args.file = map(lambda f: open(f), os.environ['COMPOSE_FILE'].split(':'))
+        except IOError, e:
+            print(e)
             parser.print_help()
             sys.exit(1)
 
