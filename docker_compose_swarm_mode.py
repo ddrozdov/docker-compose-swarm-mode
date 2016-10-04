@@ -150,7 +150,7 @@ class DockerCompose:
                 def environment():
                     if isinstance(value, dict):
                         for k, v in value.items():
-                            cmd.extend(['--env', '{}={}'.format(k, v), '\\\n'])
+                            cmd.extend(['--env', '{}="{}"'.format(k, v), '\\\n'])
                     else:
                         for env in value:
                             if env.startswith('constraint') or env.startswith('affinity'):
