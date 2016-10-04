@@ -215,7 +215,7 @@ class DockerCompose:
 
 def main():
     parser = argparse.ArgumentParser(formatter_class=lambda prog: argparse.HelpFormatter(prog, max_help_position=50, width=120))
-    parser.add_argument('-f', '--file', type=argparse.FileType(), help='Specify an alternate compose file (default: docker-compose.yml)', default='docker-compose.yml')
+    parser.add_argument('-f', '--file', type=argparse.FileType(), help='Specify an alternate compose file (default: docker-compose.yml)', default=[], action='append')
     parser.add_argument('-p', '--project-name', help='Specify an alternate project name (default: directory name)')
     parser.add_argument('--dry-run', action='store_true')
     subparsers = parser.add_subparsers(title='Command')
@@ -243,16 +243,47 @@ def main():
 
     args = parser.parse_args(sys.argv[1:])
 
+    if len(args.file) == 0:
+        if os.path.isfile('docker-compose.yml'):
+            args.file = [open('docker-compose.yml')]
+        else:
+            print('No compose file found or specified.')
+            parser.print_help()
+            sys.exit(1)
+
     global debug
     debug = args.dry_run
 
-    compose_base_dir = os.path.dirname(os.path.abspath(args.file.name))
+    compose_base_dir = os.path.dirname(os.path.abspath(args.file[0].name))
 
     if not args.project_name:
         args.project_name = os.path.basename(compose_base_dir)
 
-    docker_compose = DockerCompose(yaml.load(args.file, yodl.OrderedDictYAMLLoader), args.project_name, compose_base_dir + '/', args.service)
+    # Decode and merge the compose files
+    compose_dicts = map(lambda f: yaml.load(f, yodl.OrderedDictYAMLLoader), args.file)
+    merged_compose = reduce(merge, compose_dicts)
+
+    docker_compose = DockerCompose(merged_compose, args.project_name, compose_base_dir + '/', args.service)
     getattr(docker_compose, args.command)()
+
+
+# Based on http://stackoverflow.com/questions/7204805/dictionaries-of-dictionaries-merge/7205107#7205107
+def merge(a, b, path=None):
+    "merges b into a"
+    if path is None: path = []
+    for key in b:
+        if key in a:
+            if isinstance(a[key], dict) and isinstance(b[key], dict):
+                merge(a[key], b[key], path + [str(key)])
+            elif isinstance(a[key], list) and isinstance(b[key], list):
+                a[key].extend(b[key])
+            elif a[key] == b[key]:
+                pass # same leaf value
+            else:
+                raise Exception('Conflict at %s' % '.'.join(path + [str(key)]))
+        else:
+            a[key] = b[key]
+    return a
 
 
 if __name__ == "__main__":
