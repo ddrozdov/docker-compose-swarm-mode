@@ -76,12 +76,12 @@ class DockerCompose:
     def up(self):
         for network in self.networks:
             if not self.is_external_network(network):
-                cmd = '[ "`docker network ls -f name={0} | tail -n +2`" != "" ] || docker network create --driver overlay --opt encrypted {0}' \
+                cmd = '[ "`docker network ls | awk \'{{print $2}}\' | egrep \'^{0}$\'`" != "" ] || docker network create --driver overlay --opt encrypted {0}' \
                     .format(self.project_prefix(network))
                 self.call(cmd)
 
         for volume in self.volumes:
-            cmd = '[ "`docker volume ls -f name={0} | tail -n +2`" != "" ] || docker volume create --name {0}'.format(self.project_prefix(volume))
+            cmd = '[ "`docker volume ls | awk \'{{print $2}}\' | egrep \'^{0}$\'" != "" ] || docker volume create --name {0}'.format(self.project_prefix(volume))
             self.call(cmd)
 
         services_to_start = []
