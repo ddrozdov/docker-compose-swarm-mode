@@ -153,14 +153,14 @@ class DockerCompose:
                 def environment():
                     if isinstance(value, dict):
                         for k, v in value.items():
-                            cmd.extend(['--env', '{}={}'.format(k, v), '\\\n'])
+                            cmd.extend(['--env', '"{}={}"'.format(k, v), '\\\n'])
                     else:
                         for env in value:
                             if env.startswith('constraint') or env.startswith('affinity'):
                                 constraint = env.split(':', 2)[1]
                                 cmd.extend(['--constraint', "'{}'".format(constraint), '\\\n'])
                             else:
-                                cmd.extend(['--env', env, '\\\n'])
+                                cmd.extend(['--env', '"{}"'.format(env), '\\\n'])
 
                 def replicas():
                     cmd.extend(['--replicas', value, '\\\n'])
