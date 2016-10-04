@@ -157,7 +157,7 @@ class DockerCompose:
                                 constraint = env.split(':', 2)[1]
                                 cmd.extend(['--constraint', "'{}'".format(constraint), '\\\n'])
                             else:
-                                cmd.extend(['--env', env, '\\\n'])
+                                cmd.extend(['--env', '"{}"'.format(env), '\\\n'])
 
                 def replicas():
                     cmd.extend(['--replicas', value, '\\\n'])
