@@ -65,7 +65,7 @@ class DockerCompose:
                 return stdout
 
     def is_service_exists(self, service):
-        return self.call('docker service ls -f name={} | tail -n +2'.format(self.project_prefix(service)))
+        return self.call('docker service ls | awk \'{{print $2}}\' | egrep "^{}$"'.format(self.project_prefix(service)))
 
     def is_external_network(self, network):
         if not network in self.networks:
