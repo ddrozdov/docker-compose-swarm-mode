@@ -215,7 +215,7 @@ class DockerCompose:
 
 def main():
     parser = argparse.ArgumentParser(formatter_class=lambda prog: argparse.HelpFormatter(prog, max_help_position=50, width=120))
-    parser.add_argument('-f', '--file', type=argparse.FileType(), help='Specify an alternate compose file (default: docker-compose.yml)', default='docker-compose.yml')
+    parser.add_argument('-f', '--file', type=argparse.FileType(), help='Specify an alternate compose file (default: docker-compose.yml)', default=[], action='append')
     parser.add_argument('-p', '--project-name', help='Specify an alternate project name (default: directory name)')
     parser.add_argument('--dry-run', action='store_true')
     subparsers = parser.add_subparsers(title='Command')
@@ -243,15 +243,23 @@ def main():
 
     args = parser.parse_args(sys.argv[1:])
 
+    if len(args.file) == 0:
+        if os.path.isfile('docker-compose.yml'):
+            args.file = [open('docker-compose.yml')]
+        else:
+            print('No compose file found or specified.')
+            parser.print_help()
+            sys.exit(1)
+
     global debug
     debug = args.dry_run
 
-    compose_base_dir = os.path.dirname(os.path.abspath(args.file.name))
+    compose_base_dir = os.path.dirname(os.path.abspath(args.file[0].name))
 
     if not args.project_name:
         args.project_name = os.path.basename(compose_base_dir)
 
-    docker_compose = DockerCompose(yaml.load(args.file, yodl.OrderedDictYAMLLoader), args.project_name, compose_base_dir + '/', args.service)
+    docker_compose = DockerCompose(yaml.load(args.file[0], yodl.OrderedDictYAMLLoader), args.project_name, compose_base_dir + '/', args.service)
     getattr(docker_compose, args.command)()
 
 
