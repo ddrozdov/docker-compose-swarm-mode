@@ -68,7 +68,10 @@ class DockerCompose:
         return self.call('docker service ls -f name={} | tail -n +2'.format(self.project_prefix(service)))
 
     def is_external_network(self, network):
-        return isinstance(self.networks[network], dict) and 'external' in self.networks[network] if network in self.networks else False
+        if not network in self.networks:
+            print >> sys.stderr, ('Error: network "{}" is not defined in networks'.format(network))
+            sys.exit(1)
+        return isinstance(self.networks[network], dict) and 'external' in self.networks[network]
 
     def up(self):
         for network in self.networks:
