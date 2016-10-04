@@ -68,7 +68,7 @@ class DockerCompose:
         return self.call('docker service ls | awk \'{{print $2}}\' | egrep "^{}$"'.format(self.project_prefix(service)))
 
     def is_external_network(self, network):
-        if not network in self.networks:
+        if network not in self.networks:
             print >> sys.stderr, ('Error: network "{}" is not defined in networks'.format(network))
             sys.exit(1)
         return isinstance(self.networks[network], dict) and 'external' in self.networks[network]
@@ -81,7 +81,8 @@ class DockerCompose:
                 self.call(cmd)
 
         for volume in self.volumes:
-            cmd = '[ "`docker volume ls | awk \'{{print $2}}\' | egrep \'^{0}$\'" != "" ] || docker volume create --name {0}'.format(self.project_prefix(volume))
+            cmd = '[ "`docker volume ls | awk \'{{print $2}}\' | egrep \'^{0}$\'" != "" ] || docker volume create --name {0}' \
+                .format(self.project_prefix(volume))
             self.call(cmd)
 
         services_to_start = []
@@ -231,12 +232,14 @@ def main():
     if os.path.isfile(env_path):
         with open(env_path) as env_file:
             envs.update(dict(map(line.strip().split('=', 1) for line in env_file if not line.startswith('#') and line.strip())))
-    
-    map(lambda e: os.environ.update({e[0]:e[1]}), (e for e in envs.items() if not e[0] in os.environ))
+
+    map(lambda e: os.environ.update({e[0]: e[1]}), (e for e in envs.items() if not e[0] in os.environ))
 
     parser = argparse.ArgumentParser(formatter_class=lambda prog: argparse.HelpFormatter(prog, max_help_position=50, width=120))
-    parser.add_argument('-f', '--file', type=argparse.FileType(), help='Specify an alternate compose file (default: docker-compose.yml)', default=[], action='append')
-    parser.add_argument('-p', '--project-name', help='Specify an alternate project name (default: directory name)', default=os.environ.get('COMPOSE_PROJECT_NAME'))
+    parser.add_argument('-f', '--file', type=argparse.FileType(), help='Specify an alternate compose file (default: docker-compose.yml)', default=[],
+                        action='append')
+    parser.add_argument('-p', '--project-name', help='Specify an alternate project name (default: directory name)',
+                        default=os.environ.get('COMPOSE_PROJECT_NAME'))
     parser.add_argument('--dry-run', action='store_true')
     subparsers = parser.add_subparsers(title='Command')
     parser.add_argument('_service', metavar='service', nargs='*', help='List of services to run the command for')
@@ -289,8 +292,9 @@ def main():
 
 # Based on http://stackoverflow.com/questions/7204805/dictionaries-of-dictionaries-merge/7205107#7205107
 def merge(a, b, path=None):
-    "merges b into a"
-    if path is None: path = []
+    """merges b into a"""
+    if path is None:
+        path = []
     for key in b:
         if key in a:
             if isinstance(a[key], dict) and isinstance(b[key], dict):
@@ -298,7 +302,7 @@ def merge(a, b, path=None):
             elif isinstance(a[key], list) and isinstance(b[key], list):
                 a[key].extend(b[key])
             elif a[key] == b[key]:
-                pass # same leaf value
+                pass  # same leaf value
             else:
                 raise Exception('Conflict at %s' % '.'.join(path + [str(key)]))
         else:
