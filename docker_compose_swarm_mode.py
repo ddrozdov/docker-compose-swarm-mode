@@ -167,6 +167,10 @@ class DockerCompose:
 
                 locals().get(parameter, unsupported)()
 
+            if len(service_image) == 0:
+                print('ERROR: no image specified for %s service' % service)
+                sys.exit(1)
+
             cmd.extend(service_image)
             cmd.extend(service_command)
 
