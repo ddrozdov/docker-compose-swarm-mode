@@ -44,6 +44,16 @@ Keys that are silently ignored because they are not supported by `docker service
 
 ## History
 
+#### 1.2.0
+
+Fix services, networks, and volumes being incorrectly detected as existing/running in some cases.
+
+Fix spaces handling in variables under `environment` key.
+
+Support for multiple compose files.
+
+Support for `.env` file.
+
 #### 1.1.1
 
 Fix pypandoc being required on installation while needed on packaging phase only.
