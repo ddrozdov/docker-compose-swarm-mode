@@ -231,7 +231,7 @@ def main():
 
     if os.path.isfile(env_path):
         with open(env_path) as env_file:
-            envs.update(dict(map(line.strip().split('=', 1) for line in env_file if not line.startswith('#') and line.strip())))
+            envs.update(dict(map(lambda line: line.strip().split('=', 1), (line for line in env_file if not line.startswith('#') and line.strip()))))
 
     map(lambda e: os.environ.update({e[0]: e[1]}), (e for e in envs.items() if not e[0] in os.environ))
 
