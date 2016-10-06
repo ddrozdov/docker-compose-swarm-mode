@@ -117,7 +117,10 @@ class DockerCompose:
                     service_image.append(value)
 
                 def command():
-                    service_command.extend(value.split(' '))
+                    if isinstance(value, list):
+                        service_command.extend(value)
+                    else:
+                        service_command.extend(value.split(' '))
 
                 def expose():
                     pass  # unsupported
@@ -141,15 +144,19 @@ class DockerCompose:
 
                 def volumes():
                     for volume in value:
-                        src, dst = volume.split(':')
-
+                        splitted_volume = volume.split(':')
+                        src = splitted_volume.pop(0)
+                        dst = splitted_volume.pop(0)
+                        readonly = 0
+                        if splitted_volume and splitted_volume[0] == 'ro':
+                            readonly = 1
                         if src.startswith('.'):
                             src = src.replace('.', self.compose_base_dir, 1)
 
                         if src.startswith('/'):
-                            cmd.extend(['--mount', 'type=bind,src={},dst={}'.format(src, dst), '\\\n'])
+                            cmd.extend(['--mount', 'type=bind,src={},dst={},readonly={}'.format(src, dst,readonly), '\\\n'])
                         else:
-                            cmd.extend(['--mount', 'src={},dst={}'.format(self.project_prefix(src), dst), '\\\n'])
+                            cmd.extend(['--mount', 'src={},dst={},readonly={}'.format(self.project_prefix(src), dst,readonly), '\\\n'])
 
                 def environment():
                     if isinstance(value, dict):
