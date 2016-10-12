@@ -44,6 +44,10 @@ Keys that are silently ignored because they are not supported by `docker service
 
 ## History
 
+#### 1.2.2
+
+Hotfix for stop & rm commands.
+
 #### 1.2.1
 
 Fix service detection (fixes #21 and #23).
