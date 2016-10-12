@@ -65,7 +65,7 @@ class DockerCompose:
                 return stdout
 
     def is_service_exists(self, service):
-        return self.call('docker service ls | awk \'{{print $2}}\' | egrep "^{}$"'.format(self.project_prefix(service)))
+        return self.call('/bin/bash -o pipefail -c "docker service ls | awk \'{{print $2}}\' | (egrep \'^{}$\' || :)"'.format(self.project_prefix(service)))
 
     def is_external_network(self, network):
         if network not in self.networks:
@@ -81,7 +81,7 @@ class DockerCompose:
                 self.call(cmd)
 
         for volume in self.volumes:
-            cmd = '[ "`docker volume ls | awk \'{{print $2}}\' | egrep \'^{0}$\'" != "" ] || docker volume create --name {0}' \
+            cmd = '[ "`docker volume ls | awk \'{{print $2}}\' | egrep \'^{0}$\'`" != "" ] || docker volume create --name {0}' \
                 .format(self.project_prefix(volume))
             self.call(cmd)
 
