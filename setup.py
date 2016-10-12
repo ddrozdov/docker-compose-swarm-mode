@@ -6,7 +6,7 @@ try:
 except (IOError, ImportError):
     long_description = ''
 
-version = '1.2.0'
+version = '1.2.1'
 
 setup(
     name='docker-compose-swarm-mode',

@@ -44,6 +44,12 @@ Keys that are silently ignored because they are not supported by `docker service
 
 ## History
 
+#### 1.2.1
+
+Fix service detection (fixes #21 and #23).
+
+Fix typo in volume detection.
+
 #### 1.2.0
 
 Fix services, networks, and volumes being incorrectly detected as existing/running in some cases.
