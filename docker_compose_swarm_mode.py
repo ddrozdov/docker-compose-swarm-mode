@@ -23,7 +23,7 @@ class DockerCompose:
         self.filtered_services = filter(lambda service: not requested_services or service in requested_services, self.services)
 
     def project_prefix(self, value):
-        return '{}_{}'.format(self.project, value)
+        return '{}_{}'.format(self.project, value) if self.project else value
 
     def merge_services(self, services):
         result = OrderedDict()
@@ -286,7 +286,7 @@ def main():
 
     compose_base_dir = os.path.dirname(os.path.abspath(args.file[0].name))
 
-    if not args.project_name:
+    if args.project_name is None:
         args.project_name = os.path.basename(compose_base_dir)
 
     # Decode and merge the compose files
