@@ -21,6 +21,11 @@ docker-compose-swarm-mode is available on [PyPI](https://pypi.python.org/pypi/do
 
 Or just download the `.py` script.
 
+Or use Docker image `ddrozdov/docker-compose-swarm-mode`, e.g.:
+```
+docker run --rm -ti -v /var/run/docker.sock:/var/run/docker.sock -v /some/dir/with/compose/files:/compose ddrozdov/docker-compose-swarm-mode -f /compose/docker-compose.yml --dry-run up
+```
+
 ## Requirements
 
 Python 2.7+.
