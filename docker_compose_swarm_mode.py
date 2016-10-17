@@ -45,11 +45,19 @@ class DockerCompose:
                 else:
                     extended_service_data = result[extended_service]
 
-                for k, v in extended_service_data.items():
-                    if k not in result[service]:
-                        result[service][k] = v
+                merge(result[service], extended_service_data, None, self.mergeEnv)
 
         return result
+
+    @staticmethod
+    def mergeEnv(a, b, key):
+        if key == 'environment':
+            if isinstance(a[key], dict) and isinstance(b[key], list):
+                a[key] = b[key] + list({'{}={}'.format(k, v) for k, v in a[key].items()})
+            elif isinstance(a[key], list) and isinstance(b[key], dict):
+                a[key][:0] = list({'{}={}'.format(k, v) for k, v in b[key].items()})
+            else:
+                raise('Unknown type of "{}" value (should be either list or dictionary)'.format(key))
 
     @staticmethod
     def call(cmd, ignore_return_code=False):
@@ -298,7 +306,7 @@ def main():
 
 
 # Based on http://stackoverflow.com/questions/7204805/dictionaries-of-dictionaries-merge/7205107#7205107
-def merge(a, b, path=None):
+def merge(a, b, path=None, conflict_resolver=None):
     """merges b into a"""
     if path is None:
         path = []
@@ -311,7 +319,10 @@ def merge(a, b, path=None):
             elif a[key] == b[key]:
                 pass  # same leaf value
             else:
-                raise Exception('Conflict at %s' % '.'.join(path + [str(key)]))
+                if conflict_resolver:
+                    conflict_resolver(a, b, key)
+                else:
+                    raise Exception('Conflict at %s' % '.'.join(path + [str(key)]))
         else:
             a[key] = b[key]
     return a
