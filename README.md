@@ -49,6 +49,12 @@ Keys that are silently ignored because they are not supported by `docker service
 
 ## History
 
+#### 1.3.0
+
+Support empty project name (resolves #24)
+
+Merge lists and dictionaries for extended services
+
 #### 1.2.2
 
 Hotfix for stop & rm commands.
