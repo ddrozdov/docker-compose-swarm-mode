@@ -113,7 +113,7 @@ class DockerCompose:
                     cmd.extend(['--restart-condition', {'always': 'any'}[value], '\\\n'])
 
                 def logging():
-                    cmd.extend(['--log-driver', value['driver'], '\\\n'])
+                    cmd.extend(['--log-driver', value.get('driver', 'json-file'), '\\\n'])
                     log_opts = value['options']
                     for k, v in log_opts.items():
                         cmd.extend(['--log-opt', '{}={}'.format(k, v), '\\\n'])
