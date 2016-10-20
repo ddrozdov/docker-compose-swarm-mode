@@ -139,6 +139,9 @@ class DockerCompose:
                 def hostname():
                     pass  # unsupported; waiting for https://github.com/docker/docker/issues/24877
 
+                def mode():
+                    cmd.extend(['--mode', [value], '\\\n'])
+
                 def extra_hosts():
                     pass  # unsupported
 
