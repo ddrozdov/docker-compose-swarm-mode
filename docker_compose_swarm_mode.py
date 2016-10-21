@@ -115,8 +115,10 @@ class DockerCompose:
                 def logging():
                     cmd.extend(['--log-driver', value.get('driver', 'json-file'), '\\\n'])
                     log_opts = value['options']
-                    for k, v in log_opts.items():
-                        cmd.extend(['--log-opt', '{}={}'.format(k, v), '\\\n'])
+                    if log_opts:
+                        for k, v in log_opts.items():
+                            if v is not None:
+                                cmd.extend(['--log-opt', '{}={}'.format(k, v), '\\\n'])
 
                 def mem_limit():
                     cmd.extend(['--limit-memory', value, '\\\n'])
