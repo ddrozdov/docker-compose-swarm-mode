@@ -316,7 +316,7 @@ def merge(a, b, path=None, conflict_resolver=None):
     for key in b:
         if key in a:
             if isinstance(a[key], dict) and isinstance(b[key], dict):
-                merge(a[key], b[key], path + [str(key)])
+                merge(a[key], b[key], path + [str(key)], conflict_resolver)
             elif isinstance(a[key], list) and isinstance(b[key], list):
                 a[key].extend(b[key])
             elif a[key] == b[key]:
