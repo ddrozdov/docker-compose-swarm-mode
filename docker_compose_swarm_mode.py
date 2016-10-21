@@ -139,6 +139,10 @@ class DockerCompose:
                 def hostname():
                     pass  # unsupported; waiting for https://github.com/docker/docker/issues/24877
 
+                def labels():
+                    for label in value:
+                        cmd.extend(['--label', label, '\\\n'])
+
                 def mode():
                     cmd.extend(['--mode', value, '\\\n'])
 
