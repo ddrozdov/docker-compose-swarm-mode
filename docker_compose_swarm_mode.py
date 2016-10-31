@@ -293,7 +293,7 @@ def main():
     if len(args.file) == 0:
         try:
             args.file = map(lambda f: open(f), os.environ['COMPOSE_FILE'].split(':'))
-        except IOError, e:
+        except IOError as e:
             print(e)
             parser.print_help()
             sys.exit(1)
