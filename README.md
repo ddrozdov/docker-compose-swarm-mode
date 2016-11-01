@@ -15,7 +15,7 @@ Neither option looked good to me so, as a temporary solution (I still hope Docke
 
 #### UPDATE
 
-After several stability and network issues with Docker swarm mode we've decided to try our luck with Kubernetes.
+After some stability and network issues with Docker swarm mode we've decided to try our luck with Kubernetes.
 
 Several existing compose-to-kubernetes translation tools have failed on our compose files, so I decided to quick add such functionality to docker-compose-swarm-mode.
 
@@ -73,6 +73,10 @@ Keys that are silently ignored because they are not supported by Kubernetes:
 * networks
 
 ## History
+
+#### 2.0.0
+
+New operation `convert` to translate compose files to Kubernetes format.
 
 #### 1.4.0
 
