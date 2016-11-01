@@ -49,11 +49,23 @@ Keys that are silently ignored because they are not supported by `docker service
 
 ## History
 
+#### 1.4.0
+
+Support for `mode` key.
+
+Use "json-file" as a default for `logging.driver`.
+
+Partial support for `labels` key (array format only).
+
+Extended services merging fixes and improvements.
+
+Fix Python 3 compatibility.
+
 #### 1.3.0
 
-Support empty project name (resolves #24)
+Support empty project name (resolves #24).
 
-Merge lists and dictionaries for extended services
+Merge lists and dictionaries for extended services.
 
 #### 1.2.2
 
