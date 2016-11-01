@@ -4,6 +4,8 @@ MAINTAINER Dmitry Drozdov, https://github.com/ddrozdov
 
 RUN apk add --update python py-pip && rm -rf /var/cache/apk/*
 
-RUN pip install docker-compose-swarm-mode
+ARG version
+
+RUN pip install docker-compose-swarm-mode==$version
 
 ENTRYPOINT ["docker-compose-swarm-mode"]
