@@ -57,7 +57,7 @@ class DockerCompose:
             elif isinstance(a[key], list) and isinstance(b[key], dict):
                 a[key][:0] = list({'{}={}'.format(k, v) for k, v in b[key].items()})
             else:
-                raise('Unknown type of "{}" value (should be either list or dictionary)'.format(key))
+                raise ('Unknown type of "{}" value (should be either list or dictionary)'.format(key))
 
     @staticmethod
     def call(cmd, ignore_return_code=False):
@@ -171,9 +171,9 @@ class DockerCompose:
                             src = src.replace('.', self.compose_base_dir, 1)
 
                         if src.startswith('/'):
-                            cmd.extend(['--mount', 'type=bind,src={},dst={},readonly={}'.format(src, dst,readonly), '\\\n'])
+                            cmd.extend(['--mount', 'type=bind,src={},dst={},readonly={}'.format(src, dst, readonly), '\\\n'])
                         else:
-                            cmd.extend(['--mount', 'src={},dst={},readonly={}'.format(self.project_prefix(src), dst,readonly), '\\\n'])
+                            cmd.extend(['--mount', 'src={},dst={},readonly={}'.format(self.project_prefix(src), dst, readonly), '\\\n'])
 
                 def environment():
                     if isinstance(value, dict):
@@ -191,7 +191,7 @@ class DockerCompose:
                     cmd.extend(['--replicas', value, '\\\n'])
 
                 def unsupported():
-                    print('WARNING: unsupported parameter {}'.format(parameter))
+                    print >> sys.stderr, ('WARNING: unsupported parameter {}'.format(parameter))
 
                 locals().get(parameter, unsupported)()
 
@@ -244,6 +244,189 @@ class DockerCompose:
               ' '.join(['{}={}'.format(self.project_prefix(service), self.services[service].get('replicas', '1')) for service in services])
         self.call(cmd)
 
+    def convert(self):
+        # Based on http://stackoverflow.com/a/8661021
+        represent_dict_order = lambda _self, data: _self.represent_mapping('tag:yaml.org,2002:map', data.items())
+        yaml.add_representer(OrderedDict, represent_dict_order)
+
+        def project_prefix(value):
+            return '{}-{}'.format(self.project, value) if self.project else value
+
+        if self.networks:
+            print >> sys.stderr, ('WARNING: unsupported parameter "networks"')
+
+        for volume in self.volumes:
+            print >> sys.stderr, ('WARNING: unsupported parameter "volumes"')
+
+        for service in self.filtered_services:
+            service_config = self.services[service]
+            service = service.replace('_', '-')
+            service_result = OrderedDict([
+                ('apiVersion', 'v1'),
+                ('kind', 'Service'),
+                ('metadata', OrderedDict([
+                    ('name', project_prefix(service)),
+                    ('labels', OrderedDict())
+                ])),
+                ('spec', OrderedDict([
+                    ('selector', OrderedDict())
+                ]))
+            ])
+            deployment_result = OrderedDict([
+                ('apiVersion', 'extensions/v1beta1'),
+                ('kind', 'Deployment'),
+                ('metadata', OrderedDict([
+                    ('name', project_prefix(service))
+                ])),
+                ('spec', OrderedDict([
+                    ('replicas', 1),
+                    ('template', OrderedDict([
+                        ('metadata', OrderedDict([
+                            ('labels', OrderedDict())
+                        ])),
+                        ('spec', OrderedDict([
+                            ('containers', [OrderedDict([
+                                ('name', project_prefix(service)),
+                            ])])
+                        ]))
+                    ]))
+                ]))
+            ])
+
+            service_labels = service_result['metadata']['labels']
+            service_selector = service_result['spec']['selector']
+            deployment_labels = deployment_result['spec']['template']['metadata']['labels']
+            deployment_spec = deployment_result['spec']['template']['spec']
+            container = deployment_result['spec']['template']['spec']['containers'][0]
+
+            service_labels['service'] = self.project
+            service_labels['app'] = service
+
+            for parameter in service_config:
+                value = service_config[parameter]
+
+                def restart():
+                    deployment_spec['restartPolicy'] = {'always': 'Always'}[value]
+
+                def logging():
+                    pass  # unsupported
+
+                def mem_limit():
+                    container['resources'] = {'limits': {'memory': value.replace('m', 'Mi')}}
+
+                def image():
+                    container['image'] = value
+
+                def command():
+                    if isinstance(value, list):
+                        container['args'] = value
+                    else:
+                        container['args'] = value.split(' ')
+
+                def expose():
+                    service_result['spec']['ports'] = []
+                    container['ports'] = []
+                    for port in value:
+                        port_int = int(port)
+                        service_result['spec']['ports'].append(OrderedDict([('port', port_int), ('targetPort', port_int), ('name', str(port_int))]))
+                        container['ports'].append({'containerPort': port_int})
+
+                def container_name():
+                    service_result['metadata']['name'] = value
+                    deployment_result['metadata']['name'] = value
+                    container['name'] = value
+                    service_labels['app'] = value
+
+                def hostname():
+                    pass  # unsupported
+
+                def labels():
+                    pass  # TODO
+
+                def mode():
+                    pass  # TODO
+
+                def extra_hosts():
+                    pass  # unsupported
+
+                def ports():
+                    for port in value:
+                        pass  # TODO
+
+                def networks():
+                    pass  # unsupported
+
+                def volumes():
+                    container['volumeMounts'] = []
+                    deployment_spec['volumes'] = []
+                    for volume in value:
+                        splitted_volume = volume.split(':')
+                        src = splitted_volume.pop(0)
+                        dst = splitted_volume.pop(0)
+                        readonly = 0
+                        if splitted_volume and splitted_volume[0] == 'ro':
+                            readonly = 1
+                        if src.startswith('.'):
+                            src = src.replace('.', self.compose_base_dir, 1)
+
+                        if src.startswith('/'):
+                            volume_name = src.split('/')[-1].replace('.', '')
+                            container['volumeMounts'].append(OrderedDict([('name', volume_name), ('mountPath', dst)]))
+                            deployment_spec['volumes'].append(OrderedDict([('name', volume_name), ('hostPath', {'path': src})]))
+                            # TODO readonly
+                        else:
+                            volume_name = src.replace('_', '-')
+                            container['volumeMounts'].append(OrderedDict([('name', volume_name), ('mountPath', dst)]))
+                            deployment_spec['volumes'].append(
+                                OrderedDict([('name', volume_name), ('hostPath', {'path': '/volumes/' + project_prefix(volume_name)})]))
+                            # TODO readonly
+
+                def environment():
+                    if isinstance(value, dict):
+                        container['env'] = []
+                        for k, v in value.items():
+                            container['env'].append(OrderedDict([('name', k), ('value', v)]))
+                    else:
+                        for env in value:
+                            if env.startswith('constraint') or env.startswith('affinity'):
+                                if 'nodeSelector' not in deployment_spec:
+                                    deployment_spec['nodeSelector'] = OrderedDict()
+
+                                constraint = env.split(':', 2)[1]
+                                selector = 'FIX_ME'
+
+                                if constraint.startswith('node.hostname=='):
+                                    selector = 'kubernetes.io/hostname'
+                                    constraint = constraint.split('==')[1]
+
+                                if constraint.startswith('engine.labels.'):
+                                    [selector, constraint] = constraint.split('==')
+                                    selector = selector.replace('engine.labels.', '')
+
+                                deployment_spec['nodeSelector'][selector] = constraint
+                            else:
+                                if 'env' not in container:
+                                    container['env'] = []
+
+                                [k, v] = env.split('=')
+                                container['env'].append(OrderedDict([('name', k), ('value', v)]))
+
+                def replicas():
+                    deployment_result['spec']['replicas'] = int(value)
+
+                def unsupported():
+                    print >> sys.stderr, ('WARNING: unsupported parameter {}'.format(parameter))
+
+                locals().get(parameter, unsupported)()
+
+            service_selector.update(service_labels)
+            deployment_labels.update(service_labels)
+
+            sys.stdout.write(yaml.dump(service_result, default_flow_style=False))
+            print('---')
+            sys.stdout.write(yaml.dump(deployment_result, default_flow_style=False))
+            print('---')
+
 
 def main():
     envs = {
@@ -287,6 +470,9 @@ def main():
     up_parser = subparsers.add_parser('up', help='Create and start services', add_help=False, parents=[services_parser])
     up_parser.set_defaults(command='up')
     up_parser.add_argument('-d', help='docker-compose compatibility; ignored', action='store_true')
+
+    convert_parser = subparsers.add_parser('convert', help='Convert services to Kubernetes format', add_help=False, parents=[services_parser])
+    convert_parser.set_defaults(command='convert')
 
     args = parser.parse_args(sys.argv[1:])
 

@@ -15,7 +15,7 @@ setup(
     author='Dmitry Drozdov',
     url='https://github.com/ddrozdov/docker-compose-swarm-mode',
     download_url='https://github.com/ddrozdov/docker-compose-swarm-mode/tarball/' + version,
-    description='Drop in replacement for docker-compose that works with swarm mode introduced in Docker 1.12.',
+    description='Drop in replacement for docker-compose that works with swarm mode introduced in Docker 1.12 (and converter to Kubernetes format).',
     long_description=long_description,
     license='MIT',
     install_requires=['yodl>=1.0.0'],

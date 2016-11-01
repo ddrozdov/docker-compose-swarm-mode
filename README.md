@@ -1,6 +1,6 @@
 # Docker Compose for Swarm Mode
 
-Drop in replacement for docker-compose that works with swarm mode introduced in Docker 1.12.  
+Drop in replacement for docker-compose that works with swarm mode introduced in Docker 1.12 (and converter to Kubernetes format).
 
 ## Motivation
 
@@ -12,6 +12,12 @@ However DAB doesn't support a lot of `docker-compose.yml` stuff and deploying it
 So you should either stick with the previous version of Docker or throw out all your docker-compose files and run a bunch of long `docker service ...` commands.
 
 Neither option looked good to me so, as a temporary solution (I still hope Docker Compose with swarm mode support will be released soon), I've created a script that parses a `docker-compose.yml` file, generates `docker service ...` commands for you and runs them.
+
+#### UPDATE
+
+After several stability and network issues with Docker swarm mode we've decided to try our luck with Kubernetes.
+
+Several existing compose-to-kubernetes translation tools have failed on our compose files, so I decided to quick add such functionality to docker-compose-swarm-mode.
 
 ## Installation
 
@@ -46,6 +52,25 @@ Keys that are silently ignored because they are not supported by `docker service
 * expose
 * extra_hosts
 * hostname
+
+### Convert to Kubernetes format (since 2.0.0)
+
+The script can also be used to convert compose files to Kubernetes resource specifications:
+```
+docker-compose-swarm-mode -f docker-compose.yml -p project convert > kubernetes.yml
+```
+
+Currently only the things under top-level `services` key are converted.
+
+For each compose's service one Kubernetes Service and one Deployment are generated.
+
+Support for some keys is not yet implemented (see TODOs in the code).
+
+Keys that are silently ignored because they are not supported by Kubernetes:
+* extra_hosts
+* hostname
+* logging
+* networks
 
 ## History
 
