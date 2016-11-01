@@ -91,6 +91,8 @@ class DockerCompose:
         for volume in self.volumes:
             cmd = '[ "`docker volume ls | awk \'{{print $2}}\' | egrep \'^{0}$\'`" != "" ] || docker volume create --name {0}' \
                 .format(self.project_prefix(volume))
+            if isinstance(self.volumes[volume], dict) and self.volumes[volume]['driver']:
+                cmd = cmd + ' --driver={0}'.format(self.volumes[volume]['driver'])
             self.call(cmd)
 
         services_to_start = []
