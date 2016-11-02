@@ -2,3 +2,4 @@
 *.iml
 dist
 *.egg-info
+*.pyc

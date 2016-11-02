@@ -192,6 +192,14 @@ class DockerCompose:
                 def replicas():
                     cmd.extend(['--replicas', value, '\\\n'])
 
+                def env_file():
+                    for v in value:
+                        with open(v) as env_file:
+                            for line in env_file:
+                                if not line.startswith('#') and line.strip():
+                                    cmd.extend(['--env', '"{}"'.format(line.strip()), '\\\n'])
+
+
                 def unsupported():
                     print >> sys.stderr, ('WARNING: unsupported parameter {}'.format(parameter))
 
