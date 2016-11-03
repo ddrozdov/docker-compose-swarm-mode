@@ -322,7 +322,7 @@ class DockerCompose:
                     pass  # unsupported
 
                 def mem_limit():
-                    container['resources'] = {'limits': {'memory': value.replace('m', 'Mi')}}
+                    container['resources'] = {'limits': {'memory': value.replace('m', 'Mi').replace('g', 'Gi')}}
 
                 def image():
                     container['image'] = value
