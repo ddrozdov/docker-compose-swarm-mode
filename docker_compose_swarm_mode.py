@@ -144,6 +144,9 @@ class DockerCompose:
                     pass  # unsupported; waiting for https://github.com/docker/docker/issues/24877
 
                 def labels():
+                    if isinstance(value, dict):
+                        value = ('%s=%s' % i for i in value.iteritems())
+
                     for label in value:
                         cmd.extend(['--label', label, '\\\n'])
 
