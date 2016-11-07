@@ -383,7 +383,7 @@ class DockerCompose:
                             src = src.replace('.', self.compose_base_dir, 1)
 
                         if src.startswith('/'):
-                            volume_name = src.split('/')[-1].replace('.', '')
+                            volume_name = src.split('/')[-1].replace('.', '').replace('_', '-')
                             container['volumeMounts'].append(OrderedDict([('name', volume_name), ('mountPath', dst)]))
                             deployment_spec['volumes'].append(OrderedDict([('name', volume_name), ('hostPath', {'path': src})]))
                             # TODO readonly
