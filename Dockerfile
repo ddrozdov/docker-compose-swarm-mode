@@ -2,7 +2,7 @@ FROM docker:1.12.2
 
 MAINTAINER Dmitry Drozdov, https://github.com/ddrozdov
 
-RUN apk add --update python py-pip && rm -rf /var/cache/apk/*
+RUN apk add --update python py-pip bash && rm -rf /var/cache/apk/*
 
 ARG version
 
