@@ -144,6 +144,8 @@ class DockerCompose:
                     pass  # unsupported; waiting for https://github.com/docker/docker/issues/24877
 
                 def labels():
+                    value = service_config[parameter]
+                    # ^ working-around the lack of `nonlocal` statement.
                     if isinstance(value, dict):
                         value = ('%s=%s' % i for i in value.iteritems())
 
