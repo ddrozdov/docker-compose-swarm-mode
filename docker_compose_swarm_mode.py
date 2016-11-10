@@ -108,22 +108,25 @@ class DockerCompose:
             service_image = []
             service_command = []
 
+            def add_flag(key, value):
+                cmd.extend([key, shellquote(value), '\\\n'])
+
             for parameter in service_config:
                 value = service_config[parameter]
 
                 def restart():
-                    cmd.extend(['--restart-condition', {'always': 'any'}[value], '\\\n'])
+                    add_flag('--restart-condition', {'always': 'any'}[value])
 
                 def logging():
-                    cmd.extend(['--log-driver', value.get('driver', 'json-file'), '\\\n'])
+                    add_flag('--log-driver', value.get('driver', 'json-file'))
                     log_opts = value['options']
                     if log_opts:
                         for k, v in log_opts.items():
                             if v is not None:
-                                cmd.extend(['--log-opt', '{}={}'.format(k, v), '\\\n'])
+                                add_flag('--log-opt', '{}={}'.format(k, v))
 
                 def mem_limit():
-                    cmd.extend(['--limit-memory', value, '\\\n'])
+                    add_flag('--limit-memory', value)
 
                 def image():
                     service_image.append(value)
@@ -150,21 +153,21 @@ class DockerCompose:
                         value = ('%s=%s' % i for i in value.iteritems())
 
                     for label in value:
-                        cmd.extend(['--label', label, '\\\n'])
+                        add_flag('--label', label)
 
                 def mode():
-                    cmd.extend(['--mode', value, '\\\n'])
+                    add_flag('--mode', value)
 
                 def extra_hosts():
                     pass  # unsupported
 
                 def ports():
                     for port in value:
-                        cmd.extend(['--publish', port, '\\\n'])
+                        add_flag('--publish', port)
 
                 def networks():
                     for network in value:
-                        cmd.extend(['--network', network if self.is_external_network(network) else self.project_prefix(network), '\\\n'])
+                        add_flag('--network', network if self.is_external_network(network) else self.project_prefix(network))
 
                 def volumes():
                     for volume in value:
@@ -178,31 +181,31 @@ class DockerCompose:
                             src = src.replace('.', self.compose_base_dir, 1)
 
                         if src.startswith('/'):
-                            cmd.extend(['--mount', 'type=bind,src={},dst={},readonly={}'.format(src, dst, readonly), '\\\n'])
+                            add_flag('--mount', 'type=bind,src={},dst={},readonly={}'.format(src, dst, readonly))
                         else:
-                            cmd.extend(['--mount', 'src={},dst={},readonly={}'.format(self.project_prefix(src), dst, readonly), '\\\n'])
+                            add_flag('--mount', 'src={},dst={},readonly={}'.format(self.project_prefix(src), dst, readonly))
 
                 def environment():
                     if isinstance(value, dict):
                         for k, v in value.items():
-                            cmd.extend(['--env', '"{}={}"'.format(k, v), '\\\n'])
+                            add_flag('--env', '{}={}'.format(k, v))
                     else:
                         for env in value:
                             if env.startswith('constraint') or env.startswith('affinity'):
                                 constraint = env.split(':', 2)[1]
-                                cmd.extend(['--constraint', "'{}'".format(constraint), '\\\n'])
+                                add_flag('--constraint', constraint)
                             else:
-                                cmd.extend(['--env', '"{}"'.format(env), '\\\n'])
+                                add_flag('--env', env)
 
                 def replicas():
-                    cmd.extend(['--replicas', value, '\\\n'])
+                    add_flag('--replicas', value)
 
                 def env_file():
                     for v in value:
                         with open(v) as env_file:
                             for line in env_file:
                                 if not line.startswith('#') and line.strip():
-                                    cmd.extend(['--env', '"{}"'.format(line.strip()), '\\\n'])
+                                    add_flag('--env', line.strip())
 
 
                 def unsupported():
@@ -537,6 +540,8 @@ def merge(a, b, path=None, conflict_resolver=None):
             a[key] = b[key]
     return a
 
+def shellquote(s):
+    return "'" + s.replace("'", "'\\''") + "'"
 
 if __name__ == "__main__":
     main()
