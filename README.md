@@ -74,6 +74,20 @@ Keys that are silently ignored because they are not supported by Kubernetes:
 
 ## History
 
+#### 2.1.0
+
+Support for volume `driver` key.
+
+Support for `env_file` key.
+
+Some `convert` related fixes.
+
+Support for dictionary format in `labels` key.
+
+Fix `bash` missing in Docker image.
+
+Shell quoting fixes.
+
 #### 2.0.0
 
 New operation `convert` to translate compose files to Kubernetes format.
